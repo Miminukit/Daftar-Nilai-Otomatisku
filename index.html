@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>APLIKASI DAFTAR NILAI SISWA OTOMATIS</title>
+<style>
+:root{--bg:#f3f5f4;--card:#fff;--ink:#17241f;--mute:#5d6b65;--line:#dde3e0;--pri:#0f5e4d;--pri2:#e3f1ed;--acc:#c8871a;--ok:#1f7a45;--bad:#b3392f;--okbg:#e2f3e8;--badbg:#fbe6e3;--r:10px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+header{background:var(--pri);color:#fff;padding:20px 16px 56px}
+.wrap{max-width:1200px;margin:0 auto}
+header h1{margin:0 0 4px;font-size:clamp(20px,3.4vw,30px);letter-spacing:.3px}
+header p{margin:0;opacity:.9;font-size:14px}
+.ident{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:13px}
+.ident b{font-weight:600}
+main{margin-top:-36px;padding:0 16px 40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:16px}
+.card h2{margin:0 0 12px;font-size:16px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;border-left:4px solid var(--pri)}
+.stat small{color:var(--mute);display:block}
+.stat strong{font-size:26px;display:block;line-height:1.2}
+.stat span{font-size:12px;color:var(--mute)}
+.stat.hi{border-left-color:var(--ok)}.stat.lo{border-left-color:var(--bad)}.stat.av{border-left-color:var(--acc)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.bar .sp{flex:1}
+input,select,button{font:inherit}
+input,select{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);min-width:0}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--pri);outline-offset:1px}
+button{padding:8px 13px;border:1px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+button:hover{background:var(--pri2)}
+button.p{background:var(--pri);color:#fff;border-color:var(--pri)}button.p:hover{background:#0b4a3d}
+button.d{color:var(--bad)}button.d:hover{background:var(--badbg)}
+button.s{padding:4px 9px;font-size:13px}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;min-width:820px;font-size:14px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{background:#eef2f0;font-weight:600;position:sticky;top:0}
+td.n,th.n{text-align:center}
+tbody tr:hover{background:#f8faf9}
+.fin{font-weight:700}
+.tag{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12px;font-weight:600}
+.t{background:var(--okbg);color:var(--ok)}.b{background:var(--badbg);color:var(--bad)}
+.pr{display:inline-block;min-width:26px;text-align:center;font-weight:700;color:var(--pri)}
+.empty{padding:28px;text-align:center;color:var(--mute)}
+.grid2{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:900px){.grid2{grid-template-columns:3fr 2fr}}
+.chart{display:flex;align-items:flex-end;gap:10px;height:220px;padding-top:20px;border-bottom:1px solid var(--line)}
+.col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+.col i{display:block;width:100%;max-width:70px;border-radius:6px 6px 0 0;min-height:2px;transition:height .3s}
+.col b{font-size:13px;margin-bottom:3px}
+.lab{display:flex;gap:10px}.lab span{flex:1;text-align:center;font-size:12px;color:var(--mute);padding-top:4px}
+.set{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.set label{display:block;font-size:13px;color:var(--mute)}
+.set input{width:100%}
+.warn{font-size:13px;margin-top:8px;color:var(--mute)}.warn.x{color:var(--bad);font-weight:600}
+dialog{border:none;border-radius:12px;padding:0;width:min(440px,94vw);box-shadow:0 10px 40px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(10,25,20,.5)}
+dialog form{padding:18px;display:grid;gap:10px}
+dialog h3{margin:0}
+dialog label{font-size:13px;color:var(--mute);display:block}
+dialog input,dialog select{width:100%}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.acts{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#17241f;color:#fff;padding:10px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:99;max-width:90vw}
+#toast.on{opacity:1}
+.ph,.sign{display:none}
+@page{size:A4;margin:15mm}
+@media print{
+body{background:#fff;font-size:11pt}
+header,.stats,.noprint,.grid2,.set,.bar,.acol{display:none!important}
+main{margin:0;padding:0}
+.card{border:none;padding:0;margin:0}
+.tw{border:none;overflow:visible}
+table{min-width:0;font-size:10pt}
+th,td{border:1px solid #444;padding:4px 6px;white-space:normal}
+th{background:#ddd!important;position:static;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.tag{background:none;color:#000;padding:0}
+.ph{display:block;text-align:center;margin-bottom:10px;border-bottom:3px double #000;padding-bottom:8px}
+.ph h2{margin:0;font-size:14pt}.ph p{margin:2px 0;font-size:10pt}
+.sign{display:flex;justify-content:flex-end;margin-top:30px;font-size:10pt}
+.sign div{text-align:center;min-width:220px}
+tr{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<h1>APLIKASI DAFTAR NILAI SISWA OTOMATIS</h1>
+<p>Kelola nilai peserta didik dengan cepat, rapi, dan tersimpan otomatis di perangkat Anda.</p>
+<div class="ident" id="ident"></div>
+</div></header>
+
+<main><div class="wrap">
+
+<section class="stats" id="stats"></section>
+
+<section class="card">
+<h2>Daftar nilai siswa</h2>
+<div class="bar noprint">
+<select id="fKelas" aria-label="Pilih kelas"></select>
+<input id="q" type="search" placeholder="Cari nama siswa..." aria-label="Cari nama siswa">
+<span class="sp"></span>
+<button class="p" id="bAdd">+ Tambah siswa</button>
+</div>
+<div class="bar noprint">
+<button id="bImpCsv">Impor CSV</button>
+<button id="bExpCsv">Ekspor CSV</button>
+<button id="bPrint">Cetak A4</button>
+<span class="sp"></span>
+<button id="bExpJson">Cadangan JSON</button>
+<button id="bImpJson">Pulihkan JSON</button>
+<button class="d" id="bReset">Muat data contoh</button>
+</div>
+<div class="ph" id="ph"></div>
+<div class="tw"><table>
+<thead><tr><th class="n">No</th><th>NIS</th><th>Nama siswa</th><th>Kelas</th><th class="n">Tugas</th><th class="n">Formatif</th><th class="n">Sumatif</th><th class="n">Nilai akhir</th><th class="n">Predikat</th><th>Status</th><th class="acol">Aksi</th></tr></thead>
+<tbody id="tb"></tbody>
+</table></div>
+<div class="sign" id="sign"></div>
+</section>
+
+<div class="grid2 noprint">
+<section class="card">
+<h2 id="chT">Distribusi nilai akhir</h2>
+<div class="chart" id="chart"></div>
+<div class="lab" id="lab"></div>
+</section>
+<section class="card">
+<h2>Pengaturan penilaian</h2>
+<div class="set" id="set"></div>
+<div class="warn" id="wsum"></div>
+</section>
+</div>
+
+</div></main>
+
+<dialog id="dlg"><form method="dialog" id="fm" novalidate>
+<h3 id="dT">Tambah siswa</h3>
+<div><label for="fNis">NIS</label><input id="fNis" inputmode="numeric"></div>
+<div><label for="fNama">Nama siswa</label><input id="fNama"></div>
+<div><label for="fKls">Kelas</label><select id="fKls"></select></div>
+<div class="row3">
+<div><label for="fT">Tugas</label><input id="fT" type="number" min="0" max="100" step="0.1"></div>
+<div><label for="fF">Formatif</label><input id="fF" type="number" min="0" max="100" step="0.1"></div>
+<div><label for="fS">Sumatif</label><input id="fS" type="number" min="0" max="100" step="0.1"></div>
+</div>
+<div class="warn" id="fErr"></div>
+<div class="acts"><button type="button" id="dCancel">Batal</button><button type="submit" class="p">Simpan</button></div>
+</form></dialog>
+
+<input type="file" id="fileCsv" accept=".csv,text/csv" hidden>
+<input type="file" id="fileJson" accept=".json,application/json" hidden>
+<div id="toast" role="status"></div>
+
+<script>
+const KEY='daftar_nilai_siswa_v1';
+const KELAS=['X-1','X-2','X-3','XI-1','XI-2','XI-3','XII-1','XII-2','XII-3'];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp=v=>Math.max(0,Math.min(100,v));
+const r1=v=>Math.round(v*10)/10;
+const fmt=v=>String(r1(v)).replace('.',',');
+
+function defCfg(){return{w:{t:30,f:30,s:40},p:{A:90,B:80,C:70},kktp:75,id:{sekolah:'SMA Negeri 16 Buton Tengah',tahun:'2026/2027',mapel:'Informatika',guru:'Bapak/Ibu Guru Informatika'}}}
+
+function sample(){
+ const N=['Ahmad Fauzan','Siti Nurhaliza','La Ode Rizky','Wa Ode Sartika','Muh. Reza Pratama','Ayu Lestari','Dimas Saputra','Nur Aisyah','Fajar Ramadhan','Rahmawati','Andi Wijaya','Putri Maharani','Rizal Hidayat','Indah Permata','Yusuf Kurniawan','Dewi Anggraini','La Ode Hasbi','Sri Wahyuni','Bayu Firmansyah','Nirmala Sari','Arif Budiman','Lestari Handayani','Hendra Gunawan','Mega Safitri','Ilham Maulana','Fitriani','Rendi Saputra','Wa Ode Nurmila','Taufik Hidayat','Anisa Rahma','Gilang Permana','Yuliana','Zulkifli','Eka Putri Ananda','Randi Saputro','Melati Kusuma'];
+ let x=11;const rnd=()=>{x=(x*9301+49297)%233280;return x/233280};
+ return N.map((n,i)=>{const b=58+rnd()*38;const g=()=>r1(clamp(b+(rnd()-.5)*16));
+  return{id:'s'+(i+1),nis:String(2026001+i),nama:n,kelas:KELAS[i%9],tugas:g(),formatif:g(),sumatif:g()}});
+}
+
+function load(){
+ try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&Array.isArray(d.students)){d.cfg=merge(defCfg(),d.cfg||{});return d}}catch(e){}
+ return{students:sample(),cfg:defCfg()};
+}
+function merge(a,b){for(const k in a){if(b[k]===undefined)continue;a[k]=(a[k]&&typeof a[k]==='object')?merge(a[k],b[k]):b[k]}return a}
+let S=load();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Penyimpanan penuh atau diblokir browser.')}}
+let tm;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tm);tm=setTimeout(()=>t.classList.remove('on'),2600)}
+
+/* Perhitungan */
+function akhir(s){const W=S.cfg.w,tot=W.t+W.f+W.s;if(tot<=0)return 0;return r1((s.tugas*W.t+s.formatif*W.f+s.sumatif*W.s)/tot)}
+function predikat(v){const p=S.cfg.p;return v>=p.A?'A':v>=p.B?'B':v>=p.C?'C':'D'}
+const tuntas=v=>v>=S.cfg.kktp;
+
+function view(){
+ const k=$('#fKelas').value,q=$('#q').value.trim().toLowerCase();
+ const inK=S.students.filter(s=>k==='all'||s.kelas===k);
+ const ord=(a,b)=>KELAS.indexOf(a.kelas)-KELAS.indexOf(b.kelas)||a.nama.localeCompare(b.nama,'id');
+ inK.sort(ord);
+ return{inK,list:q?inK.filter(s=>s.nama.toLowerCase().includes(q)):inK};
+}
+
+function render(){
+ const c=S.cfg,id=c.id,{inK,list}=view();
+ $('#ident').innerHTML=`<span><b>Sekolah:</b> ${esc(id.sekolah)}</span><span><b>Tahun Pelajaran:</b> ${esc(id.tahun)}</span><span><b>Mata Pelajaran:</b> ${esc(id.mapel)}</span><span><b>Guru:</b> ${esc(id.guru)}</span>`;
+ const kl=$('#fKelas').value==='all'?'Semua Kelas':'Kelas '+$('#fKelas').value;
+ /* dashboard */
+ const v=inK.map(akhir);
+ const hi=v.length?Math.max(...v):null,lo=v.length?Math.min(...v):null;
+ const avg=v.length?v.reduce((a,b)=>a+b,0)/v.length:null;
+ const nm=x=>{const s=inK.find(s=>akhir(s)===x);return s?s.nama:''};
+ const nT=v.filter(tuntas).length;
+ $('#stats').innerHTML=`
+ <div class="stat"><small>Jumlah siswa</small><strong>${inK.length}</strong><span>${kl}</span></div>
+ <div class="stat hi"><small>Nilai tertinggi</small><strong>${hi===null?'-':fmt(hi)}</strong><span>${esc(nm(hi))}&nbsp;</span></div>
+ <div class="stat lo"><small>Nilai terendah</small><strong>${lo===null?'-':fmt(lo)}</strong><span>${esc(nm(lo))}&nbsp;</span></div>
+ <div class="stat av"><small>Rata-rata kelas</small><strong>${avg===null?'-':fmt(avg)}</strong><span>${nT} tuntas, ${inK.length-nT} belum tuntas</span></div>`;
+ /* tabel */
+ $('#ph').innerHTML=`<h2>DAFTAR NILAI ${esc(id.mapel.toUpperCase())}</h2><p>${esc(id.sekolah)} - Tahun Pelajaran ${esc(id.tahun)}</p><p>${kl} | Bobot: Tugas ${c.w.t}%, Formatif ${c.w.f}%, Sumatif ${c.w.s}% | KKTP: ${c.kktp}</p>`;
+ $('#sign').innerHTML=`<div>Guru Mata Pelajaran<br><br><br><br><b>${esc(id.guru)}</b></div>`;
+ $('#tb').innerHTML=list.length?list.map((s,i)=>{const a=akhir(s),t=tuntas(a);
+  return`<tr><td class="n">${i+1}</td><td>${esc(s.nis)}</td><td>${esc(s.nama)}</td><td>${esc(s.kelas)}</td><td class="n">${fmt(s.tugas)}</td><td class="n">${fmt(s.formatif)}</td><td class="n">${fmt(s.sumatif)}</td><td class="n fin">${fmt(a)}</td><td class="n"><span class="pr">${predikat(a)}</span></td><td><span class="tag ${t?'t':'b'}">${t?'Tuntas':'Belum tuntas'}</span></td><td class="acol"><button class="s" data-e="${s.id}">Edit</button> <button class="s d" data-d="${s.id}">Hapus</button></td></tr>`}).join('')
+  :`<tr><td colspan="11" class="empty">Tidak ada siswa yang cocok. Ubah kata kunci atau tambahkan siswa baru.</td></tr>`;
+ chart(v,kl);
+ wsum();
+}
+
+function chart(v,kl){
+ const bins=[['<50',0,50],['50-59',50,60],['60-69',60,70],['70-79',70,80],['80-89',80,90],['90-100',90,101]];
+ const cnt=bins.map(b=>v.filter(x=>x>=b[1]&&x<b[2]).length),mx=Math.max(1,...cnt);
+ $('#chT').textContent='Distribusi nilai akhir - '+kl;
+ $('#chart').innerHTML=bins.map((b,i)=>`<div class="col"><b>${cnt[i]}</b><i style="height:${cnt[i]/mx*85}%;background:${b[2]<=S.cfg.kktp?'#d9695f':'#2f8f6f'}"></i></div>`).join('');
+ $('#lab').innerHTML=bins.map(b=>`<span>${b[0]}</span>`).join('');
+}
+
+/* Pengaturan */
+function buildSet(){
+ const c=S.cfg,f=[['Bobot tugas (%)','w.t',c.w.t],['Bobot formatif (%)','w.f',c.w.f],['Bobot sumatif (%)','w.s',c.w.s],['Batas A (min)','p.A',c.p.A],['Batas B (min)','p.B',c.p.B],['Batas C (min)','p.C',c.p.C],['KKTP','kktp',c.kktp],['Sekolah','id.sekolah',c.id.sekolah],['Tahun pelajaran','id.tahun',c.id.tahun],['Mata pelajaran','id.mapel',c.id.mapel],['Guru','id.guru',c.id.guru]];
+ $('#set').innerHTML=f.map(([l,k,v])=>`<div><label>${l}<input data-k="${k}" ${k.startsWith('id.')?'':'type="number" min="0" max="100" step="1"'} value="${esc(v)}"></label></div>`).join('')+'<div style="grid-column:1/-1;font-size:13px;color:var(--mute)">Predikat D otomatis untuk nilai di bawah batas C.</div>';
+}
+function wsum(){const W=S.cfg.w,t=W.t+W.f+W.s;const e=$('#wsum');e.className='warn'+(t===100?'':' x');e.textContent=t===100?'Total bobot 100%.':`Total bobot ${t}%. Perhitungan tetap dinormalkan, tetapi disarankan 100%.`}
+$('#set').addEventListener('input',e=>{
+ const k=e.target.dataset.k;if(!k)return;
+ const isT=!k.startsWith('id.');let v=isT?parseFloat(e.target.value):e.target.value;
+ if(isT){if(isNaN(v))return;v=clamp(v)}
+ const p=k.split('.');if(p.length===2)S.cfg[p[0]][p[1]]=v;else S.cfg[k]=v;
+ save();render();
+});
+
+/* Tambah / edit */
+let editId=null;
+function fillKls(){$('#fKls').innerHTML=KELAS.map(k=>`<option>${k}</option>`).join('');$('#fKelas').innerHTML='<option value="all">Semua kelas</option>'+KELAS.map(k=>`<option>${k}</option>`).join('')}
+function openForm(id){
+ editId=id;const s=S.students.find(x=>x.id===id)||{nis:'',nama:'',kelas:$('#fKelas').value==='all'?KELAS[0]:$('#fKelas').value,tugas:'',formatif:'',sumatif:''};
+ $('#dT').textContent=id?'Edit data siswa':'Tambah siswa';
+ $('#fNis').value=s.nis;$('#fNama').value=s.nama;$('#fKls').value=s.kelas;$('#fT').value=s.tugas;$('#fF').value=s.formatif;$('#fS').value=s.sumatif;$('#fErr').textContent='';$('#fErr').className='warn';
+ $('#dlg').showModal();
+}
+$('#fm').addEventListener('submit',e=>{
+ e.preventDefault();
+ const nis=$('#fNis').value.trim(),nama=$('#fNama').value.trim(),n=[$('#fT').value,$('#fF').value,$('#fS').value].map(parseFloat);
+ const err=m=>{$('#fErr').textContent=m;$('#fErr').className='warn x'};
+ if(!nis)return err('NIS wajib diisi.');
+ if(!nama)return err('Nama siswa wajib diisi.');
+ if(n.some(x=>isNaN(x)||x<0||x>100))return err('Nilai tugas, formatif, dan sumatif harus angka 0-100.');
+ if(S.students.some(s=>s.nis===nis&&s.id!==editId))return err('NIS sudah dipakai siswa lain.');
+ const d={nis,nama,kelas:$('#fKls').value,tugas:n[0],formatif:n[1],sumatif:n[2]};
+ if(editId)Object.assign(S.students.find(s=>s.id===editId),d);else S.students.push({id:'s'+Date.now()+Math.random().toString(36).slice(2,6),...d});
+ save();$('#dlg').close();render();toast(editId?'Data siswa diperbarui.':'Siswa ditambahkan.');
+});
+$('#dCancel').onclick=()=>$('#dlg').close();
+$('#bAdd').onclick=()=>openForm(null);
+$('#tb').addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.e)openForm(b.dataset.e);
+ if(b.dataset.d){const s=S.students.find(x=>x.id===b.dataset.d);if(s&&confirm('Hapus data '+s.nama+'?')){S.students=S.students.filter(x=>x.id!==s.id);save();render();toast('Data siswa dihapus.')}}
+});
+$('#q').oninput=render;$('#fKelas').onchange=render;
+
+/* CSV */
+function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+const cell=v=>{v=String(v);return /[";\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+$('#bExpCsv').onclick=()=>{
+ const {list}=view();
+ const rows=[['NIS','Nama','Kelas','Tugas','Formatif','Sumatif','Nilai Akhir','Predikat','Status']].concat(list.map(s=>{const a=akhir(s);return[s.nis,s.nama,s.kelas,s.tugas,s.formatif,s.sumatif,a,predikat(a),tuntas(a)?'Tuntas':'Belum Tuntas']}));
+ dl('daftar-nilai.csv','\uFEFF'+rows.map(r=>r.map(cell).join(';')).join('\r\n'),'text/csv;charset=utf-8');
+ toast('CSV diekspor ('+list.length+' siswa).');
+};
+function parseCSV(t){
+ t=t.replace(/^\uFEFF/,'');const f=t.split(/\r?\n/)[0];const d=f.split(';').length>f.split(',').length?';':',';
+ const rows=[];let r=[],c='',q=false;
+ for(let i=0;i<t.length;i++){const ch=t[i];
+  if(q){if(ch==='"'){if(t[i+1]==='"'){c+='"';i++}else q=false}else c+=ch}
+  else if(ch==='"')q=true;
+  else if(ch===d){r.push(c);c=''}
+  else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&t[i+1]==='\n')i++;r.push(c);c='';rows.push(r);r=[]}
+  else c+=ch}
+ if(c!==''||r.length){r.push(c);rows.push(r)}
+ return rows.filter(r=>r.some(x=>x.trim()));
+}
+$('#bImpCsv').onclick=()=>$('#fileCsv').click();
+$('#fileCsv').onchange=e=>{
+ const f=e.target.files[0];e.target.value='';if(!f)return;
+ const rd=new FileReader();rd.onload=()=>{
+  const rows=parseCSV(rd.result);if(rows.length<2)return toast('File CSV kosong atau tidak valid.');
+  const h=rows[0].map(x=>x.trim().toLowerCase());
+  const ix=k=>h.findIndex(x=>x===k||x.startsWith(k));
+  const m={nis:ix('nis'),nama:ix('nama'),kelas:ix('kelas'),t:ix('tugas'),f:ix('formatif'),s:ix('sumatif')};
+  if(m.nis<0||m.nama<0||m.t<0||m.f<0||m.s<0)return toast('Kolom wajib: NIS, Nama, Kelas, Tugas, Formatif, Sumatif.');
+  const num=v=>parseFloat(String(v||'').replace(',','.'));
+  const out=[];let skip=0;
+  rows.slice(1).forEach((r,i)=>{
+   const nis=(r[m.nis]||'').trim(),nama=(r[m.nama]||'').trim(),n=[r[m.t],r[m.f],r[m.s]].map(num);
+   let kls=m.kelas>=0?(r[m.kelas]||'').trim().toUpperCase():'';if(!KELAS.includes(kls))kls=$('#fKelas').value==='all'?KELAS[0]:$('#fKelas').value;
+   if(!nis||!nama||n.some(x=>isNaN(x)))return skip++;
+   out.push({id:'s'+Date.now()+'_'+i,nis,nama,kelas:kls,tugas:clamp(n[0]),formatif:clamp(n[1]),sumatif:clamp(n[2])});
+  });
+  if(!out.length)return toast('Tidak ada baris valid untuk diimpor.');
+  const rep=confirm('Impor '+out.length+' siswa.\n\nOK = Ganti semua data siswa\nBatal = Tambahkan ke data yang ada (NIS sama akan diperbarui)');
+  if(rep)S.students=out;
+  else out.forEach(o=>{const ex=S.students.find(s=>s.nis===o.nis);if(ex)Object.assign(ex,o,{id:ex.id});else S.students.push(o)});
+  save();render();toast('Impor selesai: '+out.length+' siswa'+(skip?', '+skip+' baris dilewati.':'.'));
+ };rd.readAsText(f);
+};
+
+/* JSON */
+$('#bExpJson').onclick=()=>{dl('cadangan-nilai-siswa-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({app:'daftar-nilai-siswa',version:1,students:S.students,cfg:S.cfg},null,2),'application/json');toast('Cadangan JSON diunduh.')};
+$('#bImpJson').onclick=()=>$('#fileJson').click();
+$('#fileJson').onchange=e=>{
+ const f=e.target.files[0];e.target.value='';if(!f)return;
+ const rd=new FileReader();rd.onload=()=>{
+  try{
+   const d=JSON.parse(rd.result);if(!d||!Array.isArray(d.students))throw 0;
+   const st=d.students.map((s,i)=>({id:s.id||'s'+Date.now()+'_'+i,nis:String(s.nis??''),nama:String(s.nama??''),kelas:KELAS.includes(s.kelas)?s.kelas:KELAS[0],tugas:clamp(+s.tugas||0),formatif:clamp(+s.formatif||0),sumatif:clamp(+s.sumatif||0)}));
+   if(!confirm('Pulihkan '+st.length+' siswa dari cadangan? Data saat ini akan diganti.'))return;
+   S={students:st,cfg:merge(defCfg(),d.cfg||{})};save();buildSet();render();toast('Cadangan dipulihkan.');
+  }catch(x){toast('File cadangan tidak valid.')}
+ };rd.readAsText(f);
+};
+
+$('#bPrint').onclick=()=>window.print();
+$('#bReset').onclick=()=>{if(confirm('Ganti semua data dan pengaturan dengan 36 data contoh?')){S={students:sample(),cfg:defCfg()};save();buildSet();render();toast('Data contoh dimuat.')}};
+
+fillKls();buildSet();render();save();
+</script>
+</body>
+</html>
